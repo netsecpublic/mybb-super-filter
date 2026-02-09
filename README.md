@@ -65,4 +65,5 @@ If you are a developer or just curious, here is what is inside the `mybb-super-f
 * `manifest.json` - The extension configuration.
 * `popup.html` - The user interface.
 * `popup.js` - The logic for saving/loading your block lists.
-* `content.js` - The engine that runs on My
+* `content.js` - The engine that runs on MyBroadband to hide elements.
+* `icon.png` - The toolbar icon.
