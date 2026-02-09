@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MyBB Filter</title>
+  <style>
+    body { width: 340px; margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f6f8; color: #333; }
+    header { background: #0c4a8a; color: white; padding: 15px; text-align: center; }
+    h2 { margin: 0; font-size: 16px; }
+
+    /* Tabs */
+    .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; }
+    .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; font-weight: 600; color: #666; }
+    .tab-btn:hover { background: #f0f0f0; }
+    .tab-btn.active { border-bottom-color: #0c4a8a; color: #0c4a8a; background: #eef4fa; }
+
+    /* Content */
+    .tab-content { display: none; padding: 15px; }
+    .tab-content.active { display: block; }
+
+    /* Lists */
+    .list-container { max-height: 200px; overflow-y: auto; background: white; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+    .item:last-child { border-bottom: none; }
+    .remove-btn { background: #d32f2f; color: white; border: none; border-radius: 3px; padding: 3px 8px; cursor: pointer; font-size: 11px; }
+
+    /* Inputs */
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+    input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .add-btn { background: #0c4a8a; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    .add-btn:hover { background: #083b70; }
+    .hint { font-size: 11px; color: #777; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>MyBB Super Filter</h2>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="threads">Threads</button>
+    <button class="tab-btn" data-tab="sections">Sections</button>
+    <button class="tab-btn" data-tab="users">Users</button>
+  </div>
+
+  <div id="threads" class="tab-content active">
+    <div class="list-container" id="thread-list"></div>
+    <div class="input-group">
+      <input type="text" id="t-id" placeholder="Thread ID (e.g. 123456)">
+      <input type="text" id="t-name" placeholder="Label (e.g. Politics)">
+      <button class="add-btn" id="btn-add-thread">Block Thread</button>
+    </div>
+    <p class="hint">Use the number found at the end of the URL.</p>
+  </div>
+
+  <div id="sections" class="tab-content">
+    <div class="list-container" id="section-list"></div>
+    <div class="input-group">
+      <input type="text" id="s-id" placeholder="Section ID (e.g. 152)">
+      <input type="text" id="s-name" placeholder="Name (e.g. Off-Topic)">
+      <button class="add-btn" id="btn-add-section">Block Section</button>
+    </div>
+    <p class="hint">Hover over a forum title to see the ID (e.g. .152).</p>
+  </div>
+
+  <div id="users" class="tab-content">
+    <div class="list-container" id="user-list"></div>
+    <div class="input-group">
+      <input type="text" id="u-name" placeholder="Username (Exact Spelling)">
+      <button class="add-btn" id="btn-add-user">Block User</button>
+    </div>
+    <p class="hint">Hides threads started by them AND their posts.</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
