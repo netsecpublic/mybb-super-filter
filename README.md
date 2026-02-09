@@ -2,7 +2,7 @@
 
 **One plugin to rule them all.** A powerful, lightweight browser extension for MyBroadband.co.za that gives you complete control over your forum feed. Block specific threads, entire sections, or annoying spammers—all from a single, modern interface.
 
-![MyBB Filter Icon](icon.svg)
+![MyBB Filter Icon](icon.png)
 
 ## ✨ Features
 
