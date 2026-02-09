@@ -1,9 +1,12 @@
 {
   "manifest_version": 3,
   "name": "MyBroadband Super Filter",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Block Threads, Sections, and Users on MyBroadband.",
   "permissions": ["storage"],
+  "icons": {
+    "128": "icon.png"
+  },
   "content_scripts": [
     {
       "matches": ["*://mybroadband.co.za/forum/*"],
@@ -12,10 +15,6 @@
     }
   ],
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": "icon.svg"
-  },
-  "icons": {
-    "128": "icon.svg"
+    "default_popup": "popup.html"
   }
 }
