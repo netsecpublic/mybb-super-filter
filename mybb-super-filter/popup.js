@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Master Toggle Logic
+    const masterToggle = document.getElementById('masterToggle');
+    
+    // Load initial toggle state
+    chrome.storage.sync.get(['filterEnabled'], (data) => {
+        // Default to true if not set
+        masterToggle.checked = data.filterEnabled !== false;
+    });
+
+    // Save state when clicked
+    masterToggle.addEventListener('change', (e) => {
+        chrome.storage.sync.set({ filterEnabled: e.target.checked });
+    });
+
     // Tab switching
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -105,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         btn.addEventListener('click', () => {
-            // strip out anything that isn't a number just in case you paste a URL by accident
             const rawId = idInput.value.trim();
             const cleanId = rawId.replace(/\D/g, ''); 
             const desc = descInput.value.trim();
