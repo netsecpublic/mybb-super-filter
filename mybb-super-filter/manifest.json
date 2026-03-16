@@ -1,20 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "MyBroadband Super Filter",
-  "version": "2.1",
-  "description": "Block Threads, Sections, and Users on MyBroadband.",
-  "permissions": ["storage"],
-  "icons": {
-    "128": "icon.png"
+  "name": "MyBB Super Filter Toolkit",
+  "version": "3.0",
+  "description": "All-in-one suite: Block users, hide specific threads, hide forum sections, and filter 'New Posts'.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.mybroadband.co.za/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "MyBB Filter Settings"
   },
   "content_scripts": [
     {
-      "matches": ["*://mybroadband.co.za/forum/*"],
+      "matches": [
+        "*://mybroadband.co.za/forum/*"
+      ],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     }
-  ],
-  "action": {
-    "default_popup": "popup.html"
-  }
+  ]
 }
