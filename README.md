@@ -67,3 +67,9 @@ If you are a developer or just curious, here is what is inside the `mybb-super-f
 * `popup.js` - The logic for saving/loading your block lists.
 * `content.js` - The engine that runs on MyBroadband to hide elements.
 * `icon.png` - The toolbar icon.
+
+
+## Change Log
+
+16/3/2026 - Added global toggle switch
+16/3/2026 - Added the ability to block user based on latest post. 
