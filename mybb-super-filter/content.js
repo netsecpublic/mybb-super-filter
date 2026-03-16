@@ -2,7 +2,6 @@ function applyFilters() {
     chrome.storage.sync.get(['ignoredUsers', 'ignoredThreads', 'ignoredSections'], (data) => {
         const users = (data.ignoredUsers || []).map(u => u.toLowerCase().trim());
         const sections = (data.ignoredSections || []).map(s => s.toLowerCase().trim());
-        // Threads are now objects: { id: "123456", desc: "Crypto stuff" }
         const threads = data.ignoredThreads || []; 
 
         // 1. Hide Messages from Ignored Users within an open thread
@@ -19,18 +18,32 @@ function applyFilters() {
              document.querySelectorAll('.message').forEach(msg => msg.style.display = '');
         }
 
-        // 2, 3 & 4. Hide Threads in listings (New Posts, Category views, etc.)
+        // 2, 3, 4 & 5. Hide Threads in listings (New Posts, Category views, etc.)
         document.querySelectorAll('.structItem--thread').forEach(threadItem => {
             let hideThread = false;
 
+            // RESTORED FEATURE: Hide if the Original Poster (Thread Creator) is ignored
+            if (users.length > 0) {
+                // XenForo 2 typically stores the creator in data-author, with a fallback to the text
+                const dataAuthor = threadItem.getAttribute('data-author');
+                let opName = dataAuthor ? dataAuthor.trim().toLowerCase() : null;
+                
+                if (!opName) {
+                    const opEl = threadItem.querySelector('.structItem-parts .username');
+                    if (opEl) opName = opEl.textContent.trim().toLowerCase();
+                }
+
+                if (opName && users.includes(opName)) {
+                    hideThread = true;
+                }
+            }
+
             // Feature: Hide ignored threads by exact Thread ID
-            if (threads.length > 0) {
+            if (!hideThread && threads.length > 0) {
                 const titleLinks = threadItem.querySelectorAll('.structItem-title a');
                 const mainTitleLink = Array.from(titleLinks).find(a => !a.classList.contains('labelLink'));
                 
                 if (mainTitleLink) {
-                    // XenForo URLs usually look like: /threads/title-goes-here.123456/
-                    // This regex extracts those digits safely
                     const match = mainTitleLink.href.match(/(?:threads\/|\.)(\d+)\//);
                     if (match && match[1]) {
                         const threadId = match[1];
@@ -51,7 +64,7 @@ function applyFilters() {
                 }
             }
 
-            // Feature: Hide thread in 'New Posts' if the last poster is ignored
+            // RECENT FEATURE: Hide thread in 'New Posts' if the LAST poster is ignored
             if (!hideThread && users.length > 0) {
                 const latestUserEl = threadItem.querySelector('.structItem-cell--latest .username');
                 if (latestUserEl && users.includes(latestUserEl.textContent.trim().toLowerCase())) {
