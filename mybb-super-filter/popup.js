@@ -1,74 +1,141 @@
-// Tab Switching Logic
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-  });
-});
-
-// Storage Keys
-const KEYS = { threads: 'blockedThreads', sections: 'blockedSections', users: 'blockedUsers' };
-
-// Render Lists
-const render = (type, listId) => {
-  const container = document.getElementById(listId);
-  chrome.storage.local.get({ [KEYS[type]]: [] }, (data) => {
-    const list = data[KEYS[type]];
-    container.innerHTML = list.length ? '' : '<div style="padding:10px;text-align:center;color:#999;">No blocks active</div>';
-    
-    list.forEach((item, index) => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      // Users are strings, others are objects
-      const display = type === 'users' ? item : `${item.name || item.id} <span style="color:#999;font-size:10px;">(${item.id})</span>`;
-      
-      div.innerHTML = `<div>${display}</div><button class="remove-btn" data-type="${type}" data-index="${index}">X</button>`;
-      container.appendChild(div);
+document.addEventListener('DOMContentLoaded', () => {
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.target).classList.add('active');
+        });
     });
-  });
-};
 
-// Add Item Logic
-const addItem = (type, item) => {
-  chrome.storage.local.get({ [KEYS[type]]: [] }, (data) => {
-    const newList = [...data[KEYS[type]], item];
-    chrome.storage.local.set({ [KEYS[type]]: newList }, () => render(type, type === 'users' ? 'user-list' : type === 'threads' ? 'thread-list' : 'section-list'));
-  });
-};
+    // --- standard manager for Users and Sections (Arrays of Strings) ---
+    function setupSimpleList(storageKey, inputId, btnId, listId, emptyId) {
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        const list = document.getElementById(listId);
+        const emptyMsg = document.getElementById(emptyId);
 
-// Event Listeners for Adding
-document.getElementById('btn-add-thread').onclick = () => {
-  const id = document.getElementById('t-id').value.trim();
-  const name = document.getElementById('t-name').value.trim();
-  if (id) { addItem('threads', { id, name }); document.getElementById('t-id').value = ''; }
-};
+        function loadItems() {
+            chrome.storage.sync.get([storageKey], (data) => {
+                const items = data[storageKey] || [];
+                list.innerHTML = '';
+                if (items.length === 0) {
+                    emptyMsg.style.display = 'block';
+                } else {
+                    emptyMsg.style.display = 'none';
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span class="item-text">${item}</span>`;
+                        const removeBtn = document.createElement('button');
+                        removeBtn.textContent = 'Unblock';
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.addEventListener('click', () => {
+                            let updated = items.filter(i => i !== item);
+                            chrome.storage.sync.set({ [storageKey]: updated }, loadItems);
+                        });
+                        li.appendChild(removeBtn);
+                        list.appendChild(li);
+                    });
+                }
+            });
+        }
 
-document.getElementById('btn-add-section').onclick = () => {
-  const id = document.getElementById('s-id').value.trim();
-  const name = document.getElementById('s-name').value.trim();
-  if (id) { addItem('sections', { id, name }); document.getElementById('s-id').value = ''; }
-};
+        btn.addEventListener('click', () => {
+            const val = input.value.trim();
+            if (val) {
+                chrome.storage.sync.get([storageKey], (data) => {
+                    const items = data[storageKey] || [];
+                    if (!items.some(i => i.toLowerCase() === val.toLowerCase())) {
+                        items.push(val);
+                        chrome.storage.sync.set({ [storageKey]: items }, () => {
+                            input.value = '';
+                            loadItems();
+                        });
+                    } else {
+                        input.value = ''; 
+                    }
+                });
+            }
+        });
+        
+        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') btn.click(); });
+        loadItems();
+    }
 
-document.getElementById('btn-add-user').onclick = () => {
-  const name = document.getElementById('u-name').value.trim();
-  if (name) { addItem('users', name); document.getElementById('u-name').value = ''; }
-};
+    // --- custom manager for Threads (Array of Objects) ---
+    function setupThreadList() {
+        const idInput = document.getElementById('threadIdInput');
+        const descInput = document.getElementById('threadDescInput');
+        const btn = document.getElementById('addThreadBtn');
+        const list = document.getElementById('threadList');
+        const emptyMsg = document.getElementById('threadEmpty');
 
-// Remove Item Logic
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('remove-btn')) {
-    const type = e.target.dataset.type;
-    const index = e.target.dataset.index;
-    chrome.storage.local.get({ [KEYS[type]]: [] }, (data) => {
-      const newList = data[KEYS[type]].filter((_, i) => i != index);
-      chrome.storage.local.set({ [KEYS[type]]: newList }, () => render(type, type === 'users' ? 'user-list' : type === 'threads' ? 'thread-list' : 'section-list'));
-    });
-  }
+        function loadThreads() {
+            chrome.storage.sync.get(['ignoredThreads'], (data) => {
+                const threads = data.ignoredThreads || [];
+                list.innerHTML = '';
+                if (threads.length === 0) {
+                    emptyMsg.style.display = 'block';
+                } else {
+                    emptyMsg.style.display = 'none';
+                    threads.forEach(thread => {
+                        const li = document.createElement('li');
+                        
+                        // Structure: ID bolded, description underneath
+                        const textContainer = document.createElement('div');
+                        textContainer.className = 'item-text';
+                        textContainer.innerHTML = `<strong>ID: ${thread.id}</strong> <span class="thread-desc">${thread.desc || 'No description'}</span>`;
+                        
+                        const removeBtn = document.createElement('button');
+                        removeBtn.textContent = 'Unblock';
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.addEventListener('click', () => {
+                            let updated = threads.filter(t => t.id !== thread.id);
+                            chrome.storage.sync.set({ ignoredThreads: updated }, loadThreads);
+                        });
+
+                        li.appendChild(textContainer);
+                        li.appendChild(removeBtn);
+                        list.appendChild(li);
+                    });
+                }
+            });
+        }
+
+        btn.addEventListener('click', () => {
+            // strip out anything that isn't a number just in case you paste a URL by accident
+            const rawId = idInput.value.trim();
+            const cleanId = rawId.replace(/\D/g, ''); 
+            const desc = descInput.value.trim();
+
+            if (cleanId) {
+                chrome.storage.sync.get(['ignoredThreads'], (data) => {
+                    const threads = data.ignoredThreads || [];
+                    if (!threads.some(t => t.id === cleanId)) {
+                        threads.push({ id: cleanId, desc: desc });
+                        chrome.storage.sync.set({ ignoredThreads: threads }, () => {
+                            idInput.value = '';
+                            descInput.value = '';
+                            loadThreads();
+                        });
+                    } else {
+                        idInput.value = '';
+                        descInput.value = '';
+                    }
+                });
+            }
+        });
+
+        idInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') btn.click(); });
+        descInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') btn.click(); });
+
+        loadThreads();
+    }
+
+    // Initialize all three
+    setupSimpleList('ignoredUsers', 'userInput', 'addUserBtn', 'userList', 'userEmpty');
+    setupSimpleList('ignoredSections', 'sectionInput', 'addSectionBtn', 'sectionList', 'sectionEmpty');
+    setupThreadList();
 });
-
-// Initial Render
-render('threads', 'thread-list');
-render('sections', 'section-list');
-render('users', 'user-list');
