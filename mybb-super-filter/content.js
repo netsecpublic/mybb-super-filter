@@ -1,5 +1,16 @@
 function applyFilters() {
-    chrome.storage.sync.get(['ignoredUsers', 'ignoredThreads', 'ignoredSections'], (data) => {
+    chrome.storage.sync.get(['ignoredUsers', 'ignoredThreads', 'ignoredSections', 'filterEnabled'], (data) => {
+        // Default to true if it hasn't been set yet
+        const isEnabled = data.filterEnabled !== false; 
+
+        // If the master toggle is OFF, unhide everything and stop processing
+        if (!isEnabled) {
+            document.querySelectorAll('.message').forEach(msg => msg.style.display = '');
+            document.querySelectorAll('.structItem--thread').forEach(thread => thread.style.display = '');
+            document.querySelectorAll('.node').forEach(node => node.style.display = '');
+            return; 
+        }
+
         const users = (data.ignoredUsers || []).map(u => u.toLowerCase().trim());
         const sections = (data.ignoredSections || []).map(s => s.toLowerCase().trim());
         const threads = data.ignoredThreads || []; 
@@ -24,7 +35,6 @@ function applyFilters() {
 
             // RESTORED FEATURE: Hide if the Original Poster (Thread Creator) is ignored
             if (users.length > 0) {
-                // XenForo 2 typically stores the creator in data-author, with a fallback to the text
                 const dataAuthor = threadItem.getAttribute('data-author');
                 let opName = dataAuthor ? dataAuthor.trim().toLowerCase() : null;
                 
