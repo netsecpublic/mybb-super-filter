@@ -71,5 +71,8 @@ If you are a developer or just curious, here is what is inside the `mybb-super-f
 
 ## Change Log
 
+18/3/2026 - Added export and import feature. Added block counter. Fixed section block bug.
+
 16/3/2026 - Added global toggle switch
+
 16/3/2026 - Added the ability to block user based on latest post. 
