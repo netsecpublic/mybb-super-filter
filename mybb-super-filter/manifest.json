@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyBB Super Filter Toolkit",
-  "version": "3.1",
-  "description": "All-in-one suite: Block users, hide specific threads (by ID), hide forum sections, and filter 'New Posts'.",
+  "version": "2.3",
+  "description": "Block users, specific threads, sections, filter 'New Posts', plus Export/Import and Badge Counters.",
   "icons": {
     "16": "icon.png",
     "32": "icon.png",
@@ -10,11 +10,15 @@
     "128": "icon.png"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "action"
   ],
   "host_permissions": [
     "*://*.mybroadband.co.za/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_title": "MyBB Filter Settings",
